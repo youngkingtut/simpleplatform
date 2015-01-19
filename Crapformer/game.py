@@ -3,6 +3,7 @@ __author__ = "Charles A. Parker; Tristan Q. Storz; Robert P. Cope"
 import pygame
 from gameconfig import GameConfig
 import logging
+import world
 
 game_logger = logging.getLogger(__name__)
 
@@ -20,51 +21,26 @@ class PlayGame(State):
     def __init__(self, *args, **kwargs):
         State.__init__(self, *args, **kwargs)
         self.surface = None
-        self.player = None
-        self.player_position = None
         self.clock = None
-
-        self.player_2 = None
-        self.player_2_position = None
+        self.world = None
 
     def setup(self):
         self.surface = pygame.Surface(GameConfig.SCREEN_SIZE)
         self.surface.fill((234, 234, 234))
-        self.player = pygame.image.load('../Sprites/crusty_running/crusty1.png')
-        self.player_2 = pygame.image.load('../Sprites/crusty_running/crusty2.png')
-        self.player_position = [GameConfig.SCREEN_SIZE[0] - 50, 0]
-        self.player_2_position = [GameConfig.SCREEN_SIZE[0] - 50, 100]
-        self.surface.blit(self.player, self.player_position)
-        self.surface.blit(self.player_2, self.player_2_position)
         self.clock = pygame.time.Clock()
+        self.world = world.LevelOne(self.state_vars, self.surface)
 
     def run(self):
         self.setup()
-        forward = True
-        while True:
+        state = True
+        while state is not None:
+            state = self.world.recieve_events(pygame.event.get())
             self.clock.tick(60)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return None
-                if event.type == pygame.KEYDOWN:
-                    if event.dict["key"] == pygame.K_LEFT:
-                        self.player_position[0] -= 2
-                    if event.dict["key"] == pygame.K_RIGHT:
-                        self.player_position[0] += 2
-                    if event.dict["key"] == pygame.K_UP:
-                        self.player_position[1] -= 2
-                    if event.dict["key"] == pygame.K_DOWN:
-                        self.player_position[1] += 2
-
-            if self.player_2_position[0] > 200:
-                forward = False
-            if self.player_2_position[0] < 20:
-                forward = True
-            self.player_2_position[0] += 1 if forward else -1
-
+            
+            self.world.process_events()
             self.surface.fill((234, 234, 234))
-            self.surface.blit(self.player, self.player_position)
-            self.surface.blit(self.player_2, self.player_2_position)
+            self.world.render_surface()
+
             self.screen.blit(self.surface, (0, 0))
             pygame.display.flip()
 
