@@ -3,6 +3,7 @@ __author__ = "Charles A. Parker; Tristan Q. Storz; Robert P. Cope"
 import itertools
 import pygame
 
+
 class World(object):
     '''
     This is a generic level.  It tracks all the objects in a given
@@ -19,6 +20,7 @@ class World(object):
         '''
         return self.idgen.next()
 
+
 class WorldObject(pygame.Surface):
     '''
     This is an object within a level.  All world objects
@@ -26,6 +28,7 @@ class WorldObject(pygame.Surface):
     '''
     def __init__(self, id, *args, **kwargs):
         self.id = id
+
 
 class WorldSolidBlock(WorldObject):
     pass
