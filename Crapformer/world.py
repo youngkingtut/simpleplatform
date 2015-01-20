@@ -15,6 +15,7 @@ class World(object):
         self.world_objects = {}
         self.surface = surface
         self.state = state
+        self.is_complete = False
 
     def gen_id(self):
         '''
@@ -25,14 +26,13 @@ class World(object):
     def recieve_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
-                return None
+                self.is_complete = True
         return True
 
     def process_events(self):
         pass
 
     def render_surface(self):
-        print self.world_objects.values()
         allsprites = pygame.sprite.RenderPlain(self.world_objects.values())
         allsprites.update()
         allsprites.draw(self.surface)
@@ -40,12 +40,15 @@ class World(object):
 
 class LevelOne(World):
     def __init__(self, *args, **kwargs):
-        World.__init__(*args, **kwargs)
+        World.__init__(self, *args, **kwargs)
 
-        for x in xrange(0, 100, 32):
+        for x in xrange(0, 800, 32):
             id = self.gen_id()
-            self.world_objects[id] = GrassBlock(id, (x,0))
-
+            self.world_objects[id] = GrassBlock(id, (x, 380))
+        for y in xrange(0, 380, 32):
+            for x in xrange(0, 800, 32):
+                id = self.gen_id()
+                self.world_objects[id] = SkyBlock(id, (x, y))
 
 
 
@@ -68,15 +71,26 @@ class GrassBlock(WorldObject):
     sprites = [pygame.image.load(src) for src in sprites_src]
 
     def __init__(self, *args, **kwargs):
-        WorldObject.__init__(*args, **kwargs)
-        self.image = random.choice(sprites)
-        self.rect  = self.image.get_rect()
+        WorldObject.__init__(self, *args, **kwargs)
+        self.image = random.choice(self.sprites)
+        self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
 
-class Player(WorldObject):
-    def __init__(self):
-        pass
+class SkyBlock(WorldObject):
+    sprites_src = ['../Sprites/sky/sky1.png']
+
+    sprites = [pygame.image.load(src) for src in sprites_src]
+
+    def __init__(self, *args, **kwargs):
+        WorldObject.__init__(self, *args, **kwargs)
+        self.image = random.choice(self.sprites)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+#class Player(WorldObject):
+#    def __init__(self):
+#        pass
 
 
 

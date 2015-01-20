@@ -32,8 +32,7 @@ class PlayGame(State):
 
     def run(self):
         self.setup()
-        state = True
-        while state is not None:
+        while not self.world.is_complete:
             state = self.world.recieve_events(pygame.event.get())
             self.clock.tick(60)
             
@@ -43,6 +42,8 @@ class PlayGame(State):
 
             self.screen.blit(self.surface, (0, 0))
             pygame.display.flip()
+        #Handle completed status
+        return None
 
 
 class StateHandler(object):
