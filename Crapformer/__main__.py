@@ -1,4 +1,4 @@
-__author__ = 'Robert Cope'
+__author__ = 'Robert P. Cope; Tristan Q. Storz; Charles A. Parker'
 
 from game import StateHandler
 import logging
@@ -7,6 +7,12 @@ ch = logging.StreamHandler()
 root_logger.addHandler(ch)
 root_logger.setLevel(logging.INFO)
 
+#TODO: Should write up a design document or graph or something to 
+#      help guide further development.
+
+#TODO: Do we need argparse?  Yes. Yes, we need argparse.  Maybe
+#      use it to pass in the mode of execution... maybe just use
+#      it to select which GameConfig we want to execute with?
 
 g = StateHandler()
 try:
