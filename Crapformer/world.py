@@ -161,13 +161,15 @@ class Player(InteractableObject):
         if True == pressed_keys[pygame.K_LEFT]:
             self.state = Player.STATE_RUNNING_LEFT
             self.pos[0] -= 4
-        if True == pressed_keys[pygame.K_RIGHT]:
+        elif True == pressed_keys[pygame.K_RIGHT]:
             self.state = Player.STATE_RUNNING_RIGHT
             self.pos[0] += 4
-        if True == pressed_keys[pygame.K_UP]:
+        elif True == pressed_keys[pygame.K_UP]:
             self.pos[1] -= 4
-        if True == pressed_keys[pygame.K_DOWN]:
+        elif True == pressed_keys[pygame.K_DOWN]:
             self.pos[1] += 4
+        else:
+            self.state = Player.STATE_STANDING
 
         print self.pos
     def get_current_sprite(self):
