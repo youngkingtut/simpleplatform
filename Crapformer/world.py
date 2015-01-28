@@ -3,6 +3,9 @@ __author__ = "Charles A. Parker; Tristan Q. Storz; Robert P. Cope"
 import itertools
 import pygame
 import random
+import logging
+
+world_logger = logging.getLogger(__name__)
 
 class World(object):
     '''
@@ -40,14 +43,21 @@ class World(object):
         pass
 
     def render_surface(self):
-        allsprites = pygame.sprite.RenderPlain(self.world_objects.values())
+        #TODO: Objects are blitted together in dict order. Need to add concept
+        #      of layers to World class to order blitting by depth.
+        #      May also want to condsider different ways graphics
+        #      might be drawn to plan for all use cases.
+        allsprites = pygame.sprite.RenderPlain(map(lambda obj: obj.get_current_sprite(), self.world_objects.values()))
         allsprites.update()
         allsprites.draw(self.surface)
 
 
 #TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
-#Or should those be handled seperately and have World be exclusively 
-#for things like LevelOne?
+#      Or should those be handled seperately and have World be exclusively 
+#      for things like LevelOne?
+
+#TODO: We should probably make each Level their own file.  Should also
+#      consider an 
 class LevelOne(World):
     #TODO: Flesh out the utilities needed to build a Level.  How should
     #levels be created?  Should level maps be created
@@ -56,49 +66,58 @@ class LevelOne(World):
         for x in xrange(0, 800, 32):
             id = self.gen_id()
             self.world_objects[id] = GrassBlock(id, (x, 380))
+        #TODO: There's certainly a better way than this to draw
+        #      backgrounds...
         for y in xrange(0, 380, 32):
             for x in xrange(0, 800, 32):
                 id = self.gen_id()
-                self.world_objects[id] = SkyBlock(id, (x, y))
+                #TODO: Commented this out since layering doesn't exist.  need to see Player instance.
+                # self.world_objects[id] = SkyBlock(id, (x, y))
 
+        player_id = self.gen_id()
+        self.world_objects[player_id] = Player(player_id, [200, 200])
 
+# === OVERARCHING WORLD OBJECT ===
 class WorldObject(pygame.sprite.Sprite):
     #TODO: Need to determine the real purpose of this 
     #      class. What needs to be contained in here?
-
-    #TODO: Objects are blitted together in dict order. Need to add concept
-    #      of layers to World class to order blitting by depth.
-    #      May also want to condsider different ways graphics
-    #      might be drawn to plan for all use cases.
     '''
     A WorldObject is any object within a level.
     '''
     def __init__(self, id, pos, *args, **kwargs):
+        pygame.sprite.Sprite.__init__(self, *args, **kwargs)
         self.id = id
         self.pos = pos
-        pygame.sprite.Sprite.__init__(self, *args, **kwargs)
 
-
+# === TYPES OF WORLD OBJECTS ===
 #TODO: What WorldObject types are there? 
-class Platform(WorldObject):
-    #TODO: Is this where the __init__s of GrassBlock would go?
-    pass
+class InteractableObject(WorldObject):
+    '''
+    Can interact with other objects that 
+    are also interactable.  They can collide, etc.
+    '''    
+    def __init__(self, *args, **kwargs):
+        pass
 
 
-class Background(WorldObject):
-    #TODO: And SkyBlock would stick it's __init__ here?
-    pass
+class NoninteractableObject(WorldObject):
+    '''
+    Can NOT interact with any other objects.  No collisions, etc.
+    '''
+    def __init__(self, *args, **kwargs):
+        pass
 
 
-class GrassBlock(Platform):
+# === TYPES OF INTERACTABLE OBJECTS ===
+class GrassBlock(InteractableObject):
     '''
     Grass blocks that act as platforms.
     '''
     #Source for the images associated with this class
-    sprites_src = ['../Sprites/grass/grass1.png',
-                   '../Sprites/grass/grass2.png',
-                   '../Sprites/grass/grass3.png']
-    sprites = [pygame.image.load(src) for src in sprites_src]
+    image_srcs = ['../Sprites/grass/grass1.png',
+                  '../Sprites/grass/grass2.png',
+                  '../Sprites/grass/grass3.png']
+    sprites = [pygame.image.load(src) for src in image_srcs]
 
     def __init__(self, *args, **kwargs):
         '''
@@ -110,15 +129,85 @@ class GrassBlock(Platform):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
+    def get_current_sprite(self):
+        return(self)
 
-class SkyBlock(Background):
+
+class Player(InteractableObject):
+    #TODO: Ew...  Should make a better system for tracking state.
+    STATE_STANDING = 0
+    STATE_RUNNING_RIGHT = 1
+    STATE_RUNNING_LEFT  = 2
+    STATE_FALLING = 3
+
+    standing_image_srcs = ['../Sprites/crusty_running/crusty1.png']
+    running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
+                           '../Sprites/crusty_running/crusty2.png']
+    
+    standing_sprites = [pygame.image.load(src) for src in standing_image_srcs]
+    running_sprites  = [pygame.image.load(src) for src in running_image_srcs]
+
+    #TODO: This should be somewhere else... probably in a method
+    running_animation = itertools.cycle(running_sprites)
+
+    def __init__(self, *args, **kwargs):
+        WorldObject.__init__(self, *args, **kwargs)
+        self.state = Player.STATE_RUNNING_RIGHT
+
+    #TODO: Remove this.  Only here to test out animation of Player
+    #      Can't get it to work and I'm tired.  bed time.  I'll branch nd leave this here.
+    def handle_input(self):
+        pressed_keys = pygame.key.get_pressed()
+        if True == pressed_keys[pygame.K_LEFT]:
+            self.state = Player.STATE_RUNNING_LEFT
+            self.pos[0] -= 4
+        if True == pressed_keys[pygame.K_RIGHT]:
+            self.state = Player.STATE_RUNNING_RIGHT
+            self.pos[0] += 4
+        if True == pressed_keys[pygame.K_UP]:
+            self.pos[1] -= 4
+        if True == pressed_keys[pygame.K_DOWN]:
+            self.pos[1] += 4
+
+        print self.pos
+    def get_current_sprite(self):
+        self.handle_input()
+        #TODO: Maybe set up states as a key = state, value = action system?
+        if self.state == Player.STATE_RUNNING_LEFT:
+            #TODO: Standardize updating of image and rect attributes.
+            self.image = self.running_animation.next()
+            #TODO: Kind of a problem with how we've set things up... pygame has the transform
+            #      module for manipulating graphics, but it operates on _surfaces_.  The only
+            #      place we have surfaces is the passed in surface.  I don't think we're using
+            #      these libraries correctly. :'(
+            #self.rect = pygame.transform.flip(self.image.get_rect(), True, False)
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos
+            return(self)
+
+        if self.state == Player.STATE_RUNNING_RIGHT:
+            #TODO: Standardize updating of image and rect attributes.
+            self.image = self.running_animation.next()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos
+            return(self)
+            
+        elif self.state == Player.STATE_STANDING:
+            self.image = self.standing_sprites[0]
+            self.rect = self.image.get_rect()
+            self.rect.topleft = self.pos
+            return(self)
+
+
+# === NONINTERACTABLE OBJECTS ===
+class SkyBlock(NoninteractableObject):
     '''
     Sky blocks that act as background coloring.  These are
     used to paint the scenery of the World. :3
     '''
     #Source for the images associated with this class
-    sprites_src = ['../Sprites/sky/sky1.png']
-    sprites = [pygame.image.load(src) for src in sprites_src]
+    image_srcs = ['../Sprites/sky/sky1.png']
+    sprites = [pygame.image.load(src) for src in image_srcs]
 
     def __init__(self, *args, **kwargs):
         '''
@@ -131,18 +220,14 @@ class SkyBlock(Background):
         self.rect = self.image.get_rect()
         self.rect.topleft = self.pos
 
-
-
-
+    def get_current_sprite(self):
+        return(self)
 
 
 
 #GARBAGE CODE, LOL
 
 
-#class Player(WorldObject):
-#    def __init__(self):
-#        pass
 
 # self.player = pygame.image.load('../Sprites/crusty_running/crusty1.png')
 #         self.player_2 = pygame.image.load('../Sprites/crusty_running/crusty2.png')
