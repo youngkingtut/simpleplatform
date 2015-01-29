@@ -1,4 +1,4 @@
-__author__ = "Charles A. Parker; Tristan Q. Storz; Robert P. Cope"
+__author__ = "Charles A. Parker", "Tristan Q. Storz", "Robert P. Cope"
 
 import pygame
 from gameconfig import GameConfig

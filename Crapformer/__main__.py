@@ -1,4 +1,4 @@
-__author__ = 'Robert P. Cope; Tristan Q. Storz; Charles A. Parker'
+__author__ = "Robert P. Cope", "Tristan Q. Storz", "Charles A. Parker"
 
 from game import StateHandler
 import logging
