@@ -4,6 +4,7 @@ import itertools
 import pygame
 import random
 import logging
+import pygame.transform as pytf
 
 world_logger = logging.getLogger(__name__)
 
@@ -50,6 +51,9 @@ class World(object):
         allsprites = pygame.sprite.RenderPlain(map(lambda obj: obj.get_current_sprite(), self.world_objects.values()))
         allsprites.update()
         allsprites.draw(self.surface)
+
+        # for surf in map(lambda obj: obj.get_current_sprite(), self.world_objects.values()):
+        #     surf.draw(self.surface)
 
 
 #TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
@@ -144,11 +148,11 @@ class Player(InteractableObject):
     running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
                            '../Sprites/crusty_running/crusty2.png']
     
-    standing_sprites = [pygame.image.load(src) for src in standing_image_srcs]
-    running_sprites  = [pygame.image.load(src) for src in running_image_srcs]
+    standing_images = [pygame.image.load(src) for src in standing_image_srcs]
+    running_images  = [pygame.image.load(src) for src in running_image_srcs]
 
     #TODO: This should be somewhere else... probably in a method
-    running_animation = itertools.cycle(running_sprites)
+    running_animation = itertools.cycle(running_images)
 
     def __init__(self, *args, **kwargs):
         WorldObject.__init__(self, *args, **kwargs)
@@ -170,19 +174,13 @@ class Player(InteractableObject):
             self.pos[1] += 4
         else:
             self.state = Player.STATE_STANDING
-
-        print self.pos
+            
     def get_current_sprite(self):
         self.handle_input()
         #TODO: Maybe set up states as a key = state, value = action system?
         if self.state == Player.STATE_RUNNING_LEFT:
             #TODO: Standardize updating of image and rect attributes.
-            self.image = self.running_animation.next()
-            #TODO: Kind of a problem with how we've set things up... pygame has the transform
-            #      module for manipulating graphics, but it operates on _surfaces_.  The only
-            #      place we have surfaces is the passed in surface.  I don't think we're using
-            #      these libraries correctly. :'(
-            #self.rect = pygame.transform.flip(self.image.get_rect(), True, False)
+            self.image = pytf.flip(self.running_animation.next(), True, False)
             self.rect = self.image.get_rect()
             self.rect.topleft = self.pos
             return(self)
@@ -195,7 +193,7 @@ class Player(InteractableObject):
             return(self)
             
         elif self.state == Player.STATE_STANDING:
-            self.image = self.standing_sprites[0]
+            self.image = self.standing_images[0]
             self.rect = self.image.get_rect()
             self.rect.topleft = self.pos
             return(self)
