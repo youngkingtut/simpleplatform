@@ -52,9 +52,6 @@ class World(object):
         allsprites.update()
         allsprites.draw(self.surface)
 
-        # for surf in map(lambda obj: obj.get_current_sprite(), self.world_objects.values()):
-        #     surf.draw(self.surface)
-
 
 #TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
 #      Or should those be handled seperately and have World be exclusively 
@@ -139,10 +136,7 @@ class GrassBlock(InteractableObject):
 
 class Player(InteractableObject):
     #TODO: Ew...  Should make a better system for tracking state.
-    STATE_STANDING = 0
-    STATE_RUNNING_RIGHT = 1
-    STATE_RUNNING_LEFT  = 2
-    STATE_FALLING = 3
+
 
     standing_image_srcs = ['../Sprites/crusty_running/crusty1.png']
     running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
@@ -156,47 +150,45 @@ class Player(InteractableObject):
 
     def __init__(self, *args, **kwargs):
         WorldObject.__init__(self, *args, **kwargs)
-        self.state = Player.STATE_RUNNING_RIGHT
+        self.is_running = False
+        self.facing_left = False
 
     #TODO: Remove this.  Only here to test out animation of Player
     #      Can't get it to work and I'm tired.  bed time.  I'll branch nd leave this here.
     def handle_input(self):
         pressed_keys = pygame.key.get_pressed()
         if True == pressed_keys[pygame.K_LEFT]:
-            self.state = Player.STATE_RUNNING_LEFT
+            self.facing_left = True
+            self.is_running = True
             self.pos[0] -= 4
         elif True == pressed_keys[pygame.K_RIGHT]:
-            self.state = Player.STATE_RUNNING_RIGHT
+            self.facing_left = False
+            self.is_running = True
             self.pos[0] += 4
-        elif True == pressed_keys[pygame.K_UP]:
+        else:
+            self.is_running = False
+
+        if True == pressed_keys[pygame.K_UP]:
             self.pos[1] -= 4
         elif True == pressed_keys[pygame.K_DOWN]:
             self.pos[1] += 4
-        else:
-            self.state = Player.STATE_STANDING
-            
+
+
     def get_current_sprite(self):
         self.handle_input()
         #TODO: Maybe set up states as a key = state, value = action system?
-        if self.state == Player.STATE_RUNNING_LEFT:
-            #TODO: Standardize updating of image and rect attributes.
-            self.image = pytf.flip(self.running_animation.next(), True, False)
-            self.rect = self.image.get_rect()
-            self.rect.topleft = self.pos
-            return(self)
-
-        if self.state == Player.STATE_RUNNING_RIGHT:
-            #TODO: Standardize updating of image and rect attributes.
+        #TODO: Standardize updating of image and rect attributes.
+        if self.is_running:
             self.image = self.running_animation.next()
-            self.rect = self.image.get_rect()
-            self.rect.topleft = self.pos
-            return(self)
-            
-        elif self.state == Player.STATE_STANDING:
+        else:
             self.image = self.standing_images[0]
-            self.rect = self.image.get_rect()
-            self.rect.topleft = self.pos
-            return(self)
+
+        if self.facing_left:
+            self.image = pytf.flip(self.image, True, False)
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+        return(self)
 
 
 # === NONINTERACTABLE OBJECTS ===
