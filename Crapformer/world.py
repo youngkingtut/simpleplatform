@@ -64,13 +64,13 @@ class LevelOne(World):
     #levels be created?  Should level maps be created
     def __init__(self, *args, **kwargs):
         World.__init__(self, *args, **kwargs)
-        for x in xrange(0, 800, 32):
+        for x in xrange(0, 800, 64):
             id = self.gen_id()
-            self.world_objects[id] = GrassBlock(id, (x, 380))
+            self.world_objects[id] = GrassBlock(id, (x, 340))
         #TODO: There's certainly a better way than this to draw
         #      backgrounds...
-        for y in xrange(0, 380, 32):
-            for x in xrange(0, 800, 32):
+        for y in xrange(0, 340, 64):
+            for x in xrange(0, 800, 64):
                 id = self.gen_id()
                 #TODO: Commented this out since layering doesn't exist.  need to see Player instance.
                 # self.world_objects[id] = SkyBlock(id, (x, y))
@@ -89,6 +89,11 @@ class WorldObject(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, *args, **kwargs)
         self.id = id
         self.pos = pos
+
+    @staticmethod
+    def load_image(src):
+        return(pytf.scale2x(pygame.image.load(src)))
+
 
 # === TYPES OF WORLD OBJECTS ===
 #TODO: What WorldObject types are there? 
@@ -118,7 +123,7 @@ class GrassBlock(InteractableObject):
     image_srcs = ['../Sprites/grass/grass1.png',
                   '../Sprites/grass/grass2.png',
                   '../Sprites/grass/grass3.png']
-    sprites = [pygame.image.load(src) for src in image_srcs]
+    sprites = [WorldObject.load_image(src) for src in image_srcs]
 
     def __init__(self, *args, **kwargs):
         '''
@@ -142,8 +147,8 @@ class Player(InteractableObject):
     running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
                            '../Sprites/crusty_running/crusty2.png']
     
-    standing_images = [pygame.image.load(src) for src in standing_image_srcs]
-    running_images  = [pygame.image.load(src) for src in running_image_srcs]
+    standing_images = [WorldObject.load_image(src) for src in standing_image_srcs]
+    running_images  = [WorldObject.load_image(src) for src in running_image_srcs]
 
     #TODO: This should be somewhere else... probably in a method
     running_animation = itertools.cycle(running_images)
@@ -160,18 +165,18 @@ class Player(InteractableObject):
         if True == pressed_keys[pygame.K_LEFT]:
             self.facing_left = True
             self.is_running = True
-            self.pos[0] -= 4
+            self.pos[0] -= 8
         elif True == pressed_keys[pygame.K_RIGHT]:
             self.facing_left = False
             self.is_running = True
-            self.pos[0] += 4
+            self.pos[0] += 8
         else:
             self.is_running = False
 
         if True == pressed_keys[pygame.K_UP]:
-            self.pos[1] -= 4
+            self.pos[1] -= 8
         elif True == pressed_keys[pygame.K_DOWN]:
-            self.pos[1] += 4
+            self.pos[1] += 8
 
 
     def get_current_sprite(self):
@@ -199,7 +204,7 @@ class SkyBlock(NoninteractableObject):
     '''
     #Source for the images associated with this class
     image_srcs = ['../Sprites/sky/sky1.png']
-    sprites = [pygame.image.load(src) for src in image_srcs]
+    sprites = [WorldObject.load_image(src) for src in image_srcs]
 
     def __init__(self, *args, **kwargs):
         '''
