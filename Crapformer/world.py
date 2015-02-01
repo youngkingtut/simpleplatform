@@ -4,6 +4,7 @@ import itertools
 import pygame
 import random
 import logging
+import operator
 import pygame.transform as pytf
 
 world_logger = logging.getLogger(__name__)
@@ -91,7 +92,10 @@ class WorldObject(pygame.sprite.Sprite):
     def __init__(self, id, pos, *args, **kwargs):
         pygame.sprite.Sprite.__init__(self, *args, **kwargs)
         self.id = id
+        #position, velocity, acceleration
         self.pos = pos
+        self.dpdt = [0,0]
+        self.d2pdt2 = [0,0.05]
 
     @staticmethod
     def load_image(srcs):
@@ -111,32 +115,22 @@ class WorldObject(pygame.sprite.Sprite):
 #           and may need to be treated differently.
 #      
 
-# === TYPES OF INTERACTABLE OBJECTS ===
-class GrassBlock(WorldObject):
+class DynamicObject(WorldObject):
     '''
-    Grass blocks that act as platforms.
+    Contains methods for generating animations
+    and motion.
     '''
-    #Source for the images associated with this class
-    image_srcs = ['../Sprites/grass/grass1.png',
-                  '../Sprites/grass/grass2.png',
-                  '../Sprites/grass/grass3.png']
-    sprites = WorldObject.load_image(image_srcs)
-
     def __init__(self, *args, **kwargs):
-        '''
-        Selects a random sprite to be loaded for each instance.
-        Initializes position and rect object for this instance.
-        '''
-        WorldObject.__init__(self, *args, **kwargs)
-        self.image = random.choice(self.sprites)
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
+        self.d2pdt2 = (0, 1)
 
-    def get_current_sprite(self):
-        return(self)
+    def update_spatial_vars(self):
+        self.pos  = map(operator.add, self.pos, self.dpdt)
+        self.dpdt = map(operator.add, self.dpdt, self.d2pdt2)
 
 
-class Player(WorldObject):
+
+# === TYPES OF INTERACTABLE OBJECTS ===
+class Player(DynamicObject):
     standing_image_srcs = ['../Sprites/crusty_running/crusty1.png']
     running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
                            '../Sprites/crusty_running/crusty2.png']
@@ -161,22 +155,25 @@ class Player(WorldObject):
         elif True == pressed_keys[pygame.K_LEFT]:
             self.facing_left = True
             self.is_running = True
-            self.pos[0] -= 8
+            self.dpdt[0] -= 1
         elif True == pressed_keys[pygame.K_RIGHT]:
             self.facing_left = False
             self.is_running = True
-            self.pos[0] += 8
+            self.dpdt[0] += 1
         else:
             self.is_running = False
+            self.dpdt[0] /= 1.1
 
         if True == pressed_keys[pygame.K_UP]:
-            self.pos[1] -= 8
+            self.dpdt[1] -= 0.1
+
         elif True == pressed_keys[pygame.K_DOWN]:
-            self.pos[1] += 8
+            pass
 
 
     def get_current_sprite(self):
         self.handle_input()
+        self.update_spatial_vars()
         #TODO: Maybe set up states as a key = state, value = action system?
         #TODO: Standardize updating of image and rect attributes.
         if self.is_running:
@@ -193,6 +190,30 @@ class Player(WorldObject):
 
 
 # === NONINTERACTABLE OBJECTS ===
+class GrassBlock(WorldObject):
+    '''
+    Grass blocks that act as platforms.
+    '''
+    #Source for the images associated with this class
+    image_srcs = ['../Sprites/grass/grass1.png',
+                  '../Sprites/grass/grass2.png',
+                  '../Sprites/grass/grass3.png']
+    sprites = WorldObject.load_image(image_srcs)
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Selects a random sprite to be loaded for each instance.
+        Initializes position and rect object for this instance.
+        '''
+        WorldObject.__init__(self, *args, **kwargs)
+        self.image = random.choice(self.sprites)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+
+    def get_current_sprite(self):
+        return(self)
+
+
 class SkyBlock(WorldObject):
     '''
     Sky blocks that act as background coloring.  These are
