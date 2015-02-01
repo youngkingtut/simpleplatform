@@ -48,6 +48,9 @@ class World(object):
         #      of layers to World class to order blitting by depth.
         #      May also want to condsider different ways graphics
         #      might be drawn to plan for all use cases.
+        #
+        #      There is a concept of layering in Sprite.Groups.  Can and probably
+        #      should use that and design rendering around that.
         allsprites = pygame.sprite.RenderPlain(map(lambda obj: obj.get_current_sprite(), self.world_objects.values()))
         allsprites.update()
         allsprites.draw(self.surface)
@@ -97,6 +100,14 @@ class WorldObject(pygame.sprite.Sprite):
 
 # === TYPES OF WORLD OBJECTS ===
 #TODO: What WorldObject types are there? 
+#      I think we should split up objects based on their graphical needs.
+#      Their graphical needs correspond to common behavior, too.
+#      i.e. a player, a monster, background animations, etc, are all
+#           going to need a state indicating direction, as well as 
+#           methods to flip or transform their images.
+#           But static things like blocks, decoration, etc. don't need that stuff
+#           and may need to be treated differently.
+#      
 class InteractableObject(WorldObject):
     '''
     Can interact with other objects that 
@@ -219,27 +230,3 @@ class SkyBlock(NoninteractableObject):
 
     def get_current_sprite(self):
         return(self)
-
-
-
-#GARBAGE CODE, LOL
-
-
-
-# self.player = pygame.image.load('../Sprites/crusty_running/crusty1.png')
-#         self.player_2 = pygame.image.load('../Sprites/crusty_running/crusty2.png')
-#         self.player_position = [GameConfig.SCREEN_SIZE[0] - 50, 0]
-#         self.player_2_position = [GameConfig.SCREEN_SIZE[0] - 50, 100]
-
-                # for event in pygame.event.get():
-        #         if event.type == pygame.QUIT:
-        #             return None
-        #         if event.type == pygame.KEYDOWN:
-        #             if event.dict["key"] == pygame.K_LEFT:
-        #                 self.player_position[0] -= 2
-        #             if event.dict["key"] == pygame.K_RIGHT:
-        #                 self.player_position[0] += 2
-        #             if event.dict["key"] == pygame.K_UP:
-        #                 self.player_position[1] -= 2
-        #             if event.dict["key"] == pygame.K_DOWN:
-        #                 self.player_position[1] += 2
