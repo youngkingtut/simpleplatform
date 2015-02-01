@@ -156,7 +156,9 @@ class Player(WorldObject):
     #      Can't get it to work and I'm tired.  bed time.  I'll branch nd leave this here.
     def handle_input(self):
         pressed_keys = pygame.key.get_pressed()
-        if True == pressed_keys[pygame.K_LEFT]:
+        if True == pressed_keys[pygame.K_LEFT] and True == pressed_keys[pygame.K_RIGHT]:
+            self.is_running = False
+        elif True == pressed_keys[pygame.K_LEFT]:
             self.facing_left = True
             self.is_running = True
             self.pos[0] -= 8
