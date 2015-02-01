@@ -52,7 +52,7 @@ class PlayGame(State):
             state = self.world.recieve_events(pygame.event.get())
             #TODO: Implement frames per second.  Should do it early as
             #it affects how player interaction needs to be designed.
-            self.clock.tick(60)
+            self.clock.tick(10)
             
             self.world.process_events()
 
