@@ -108,25 +108,9 @@ class WorldObject(pygame.sprite.Sprite):
 #           But static things like blocks, decoration, etc. don't need that stuff
 #           and may need to be treated differently.
 #      
-class InteractableObject(WorldObject):
-    '''
-    Can interact with other objects that 
-    are also interactable.  They can collide, etc.
-    '''    
-    def __init__(self, *args, **kwargs):
-        pass
-
-
-class NoninteractableObject(WorldObject):
-    '''
-    Can NOT interact with any other objects.  No collisions, etc.
-    '''
-    def __init__(self, *args, **kwargs):
-        pass
-
 
 # === TYPES OF INTERACTABLE OBJECTS ===
-class GrassBlock(InteractableObject):
+class GrassBlock(WorldObject):
     '''
     Grass blocks that act as platforms.
     '''
@@ -150,7 +134,7 @@ class GrassBlock(InteractableObject):
         return(self)
 
 
-class Player(InteractableObject):
+class Player(WorldObject):
     #TODO: Ew...  Should make a better system for tracking state.
 
 
@@ -208,7 +192,7 @@ class Player(InteractableObject):
 
 
 # === NONINTERACTABLE OBJECTS ===
-class SkyBlock(NoninteractableObject):
+class SkyBlock(WorldObject):
     '''
     Sky blocks that act as background coloring.  These are
     used to paint the scenery of the World. :3
