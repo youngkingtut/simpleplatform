@@ -3,6 +3,7 @@ __author__ = "Charles A. Parker",  "Tristan Q. Storz",  "Robert P. Cope"
 import itertools
 import pygame
 import random
+import math
 import logging
 import operator
 import pygame.transform as pytf
@@ -56,6 +57,15 @@ class World(object):
         allsprites.update()
         allsprites.draw(self.surface)
 
+    #TODO: [DETECTION] Need to add a mechanism for an element of
+    #      the world to query for other elements of the world.
+    #      Maybe somethng like find_nearby_instance_of_class()?
+    #
+    #      Would it be beneficial to track objects of interest 
+    #      and objects of not-interest seperately, so a method
+    #      like find_nearby_indtance... would have a smaller set
+    #      to scan?
+
 
 #TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
 #      Or should those be handled seperately and have World be exclusively 
@@ -82,6 +92,9 @@ class LevelOne(World):
         player_id = self.gen_id()
         self.world_objects[player_id] = Player(player_id, [200, 200])
 
+        monster_id = self.gen_id()
+        self.world_objects[monster_id] = Marty(monster_id, [400, 200])
+
 # === OVERARCHING WORLD OBJECT ===
 class WorldObject(pygame.sprite.Sprite):
     #TODO: Need to determine the real purpose of this 
@@ -95,7 +108,7 @@ class WorldObject(pygame.sprite.Sprite):
         #position, velocity, acceleration
         self.pos = pos
         self.dpdt = [0,0]
-        self.d2pdt2 = [0,0.05]
+        self.d2pdt2 = [0,0]
 
     @staticmethod
     def load_image(srcs):
@@ -121,11 +134,14 @@ class DynamicObject(WorldObject):
     and motion.
     '''
     def __init__(self, *args, **kwargs):
-        self.d2pdt2 = (0, 1)
+        pass
 
     def update_spatial_vars(self):
         self.pos  = map(operator.add, self.pos, self.dpdt)
         self.dpdt = map(operator.add, self.dpdt, self.d2pdt2)
+        if math.hypot(*self.dpdt) < 1.0:
+            self.dpdt = [0,0]
+
 
 
 
@@ -162,11 +178,10 @@ class Player(DynamicObject):
             self.dpdt[0] += 1
         else:
             self.is_running = False
-            self.dpdt[0] /= 1.1
+            self.dpdt[0] /= 2
 
         if True == pressed_keys[pygame.K_UP]:
-            self.dpdt[1] -= 0.1
-
+            pass
         elif True == pressed_keys[pygame.K_DOWN]:
             pass
 
@@ -188,6 +203,57 @@ class Player(DynamicObject):
         self.rect.topleft = self.pos
         return(self)
 
+
+class Marty(DynamicObject):
+    standing_image_srcs   = ['../Sprites/Marty/running1.png']
+    running_image_srcs    = ['../Sprites/Marty/running1.png',
+                             '../Sprites/Marty/running2.png']
+    attacking_image_srcs  = ['../Sprites/Marty/attack1.png',
+                             '../Sprites/Marty/attack2.png']
+    
+    standing_images  = WorldObject.load_image(standing_image_srcs)
+    running_images   = WorldObject.load_image(running_image_srcs)
+    attacking_images = WorldObject.load_image(attacking_image_srcs)
+
+    #TODO: This should be somewhere else... probably in a method
+    running_animation = itertools.cycle(running_images)
+    attacking_animation = itertools.cycle(attacking_images)
+
+    def __init__(self, *args, **kwargs):
+        WorldObject.__init__(self, *args, **kwargs)
+        self.is_running = True
+        self.facing_left = False
+        self.dpdt[0] = 5
+
+    #change this name.
+    def handle_input(self):
+        #TODO: Need to add a mechanism for detecting nearby surroundings.
+               # see tag [DETECTION]
+               # would like to switch to using attacking animation when near
+               # a player.
+        if self.pos[0] < 40 and self.dpdt[0] < 0:
+            self.dpdt[0] *= -1
+            self.facing_left = False
+        elif self.pos[0] > 800 - 120 and self.dpdt[0] > 0:
+            self.dpdt[0] *= -1
+            self.facing_left = True
+
+    def get_current_sprite(self):
+        self.handle_input()
+        self.update_spatial_vars()
+        #TODO: Maybe set up states as a key = state, value = action system?
+        #TODO: Standardize updating of image and rect attributes.
+        if self.is_running:
+            self.image = self.running_animation.next()
+        else:
+            self.image = self.standing_images[0]
+
+        if self.facing_left:
+            self.image = pytf.flip(self.image, True, False)
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = self.pos
+        return(self)
 
 # === NONINTERACTABLE OBJECTS ===
 class GrassBlock(WorldObject):
