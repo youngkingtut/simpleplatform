@@ -94,8 +94,10 @@ class WorldObject(pygame.sprite.Sprite):
         self.pos = pos
 
     @staticmethod
-    def load_image(src):
-        return(pytf.scale2x(pygame.image.load(src)))
+    def load_image(srcs):
+        def apply_scaling(image):
+            return(pytf.scale2x(image))
+        return([apply_scaling(pygame.image.load(src)) for src in srcs])
 
 
 # === TYPES OF WORLD OBJECTS ===
@@ -118,7 +120,7 @@ class GrassBlock(WorldObject):
     image_srcs = ['../Sprites/grass/grass1.png',
                   '../Sprites/grass/grass2.png',
                   '../Sprites/grass/grass3.png']
-    sprites = [WorldObject.load_image(src) for src in image_srcs]
+    sprites = WorldObject.load_image(image_srcs)
 
     def __init__(self, *args, **kwargs):
         '''
@@ -135,15 +137,12 @@ class GrassBlock(WorldObject):
 
 
 class Player(WorldObject):
-    #TODO: Ew...  Should make a better system for tracking state.
-
-
     standing_image_srcs = ['../Sprites/crusty_running/crusty1.png']
     running_image_srcs  = ['../Sprites/crusty_running/crusty1.png',
                            '../Sprites/crusty_running/crusty2.png']
     
-    standing_images = [WorldObject.load_image(src) for src in standing_image_srcs]
-    running_images  = [WorldObject.load_image(src) for src in running_image_srcs]
+    standing_images = WorldObject.load_image(standing_image_srcs)
+    running_images  = WorldObject.load_image(running_image_srcs)
 
     #TODO: This should be somewhere else... probably in a method
     running_animation = itertools.cycle(running_images)
@@ -199,7 +198,7 @@ class SkyBlock(WorldObject):
     '''
     #Source for the images associated with this class
     image_srcs = ['../Sprites/sky/sky1.png']
-    sprites = [WorldObject.load_image(src) for src in image_srcs]
+    sprites = WorldObject.load_image(image_srcs)
 
     def __init__(self, *args, **kwargs):
         '''
