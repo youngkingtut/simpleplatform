@@ -5,5 +5,5 @@ class GameConfig(object):
     '''
     SCREEN_SIZE = 800, 400
     CAPTION = 'Crapformer'
-    
-    #TODO: Implement FRAMES_PER_SECOND and other neat things!
+
+    # TODO: Implement FRAMES_PER_SECOND and other neat things!
