@@ -107,8 +107,6 @@ class WorldObject(pygame.sprite.Sprite):
         self.id = id
         #position, velocity, acceleration
         self.pos = pos
-        self.dpdt = [0,0]
-        self.d2pdt2 = [0,0]
 
     @staticmethod
     def load_image(srcs):
@@ -134,11 +132,16 @@ class DynamicObject(WorldObject):
     and motion.
     '''
     def __init__(self, *args, **kwargs):
+        WorldObject.__init__(self, *args, **kwargs)
+        self.dpdt = [0,0]
+        self.d2pdt2 = [0,0]
         pass
 
     def update_spatial_vars(self):
         self.pos  = map(operator.add, self.pos, self.dpdt)
         self.dpdt = map(operator.add, self.dpdt, self.d2pdt2)
+        if self.falling is True:
+            self.dpdt[1] += 3
         if math.hypot(*self.dpdt) < 1.0:
             self.dpdt = [0,0]
 
@@ -158,12 +161,14 @@ class Player(DynamicObject):
     running_animation = itertools.cycle(running_images)
 
     def __init__(self, *args, **kwargs):
-        WorldObject.__init__(self, *args, **kwargs)
+        DynamicObject.__init__(self, *args, **kwargs)
         self.is_running = False
         self.facing_left = False
+        #TODO: implement a more generic set of methods for
+        #      modifiying state 
+        self.falling = True
 
     #TODO: Remove this.  Only here to test out animation of Player
-    #      Can't get it to work and I'm tired.  bed time.  I'll branch nd leave this here.
     def handle_input(self):
         pressed_keys = pygame.key.get_pressed()
         if True == pressed_keys[pygame.K_LEFT] and True == pressed_keys[pygame.K_RIGHT]:
@@ -171,19 +176,32 @@ class Player(DynamicObject):
         elif True == pressed_keys[pygame.K_LEFT]:
             self.facing_left = True
             self.is_running = True
-            self.dpdt[0] -= 1
+            self.dpdt[0] -= 10
         elif True == pressed_keys[pygame.K_RIGHT]:
             self.facing_left = False
             self.is_running = True
-            self.dpdt[0] += 1
+            self.dpdt[0] += 10
         else:
             self.is_running = False
             self.dpdt[0] /= 2
 
+        #TODO: Why am I even still playing with this... GET RID OF THIS GROSSNESS!
+        if self.dpdt[0] < -30 or self.dpdt[0] > 30:
+            self.dpdt[0] /= 2
+
         if True == pressed_keys[pygame.K_UP]:
+            if self.falling is False:
+                self.falling = True
+                self.dpdt[1] -= 30
             pass
         elif True == pressed_keys[pygame.K_DOWN]:
             pass
+
+        #TODO: Get rid of this hard coded stop.
+        if self.pos[1] + self.dpdt[1] > 280:
+            self.pos[1] = 280
+            self.dpdt[1] = 0
+            self.falling = False
 
 
     def get_current_sprite(self):
@@ -220,9 +238,10 @@ class Marty(DynamicObject):
     attacking_animation = itertools.cycle(attacking_images)
 
     def __init__(self, *args, **kwargs):
-        WorldObject.__init__(self, *args, **kwargs)
+        DynamicObject.__init__(self, *args, **kwargs)
         self.is_running = True
         self.facing_left = False
+        self.falling = False
         self.dpdt[0] = 5
 
     #change this name.
