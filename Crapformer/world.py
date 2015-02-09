@@ -1,4 +1,4 @@
-__author__ = "Charles A. Parker",  "Tristan Q. Storz",  "Robert P. Cope"
+__author__ = "Charles A. Parker", "Tristan Q. Storz", "Robert P. Cope"
 
 import itertools
 import pygame
@@ -68,7 +68,7 @@ class World(object):
     #       to scan?
 
 
-#T ODO: Should we have different types of Worlds -- Menus?  Gameworlds?
+# TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
 #       Or should those be handled seperately and have World be exclusively
 #       for things like LevelOne?
 
@@ -211,7 +211,7 @@ class Marty(DynamicObject):
                             '../Sprites/Marty/attack2.png']
 
     standing_images = WorldObject.load_image(standing_image_srcs)
-    running_images  = WorldObject.load_image(running_image_srcs)
+    running_images = WorldObject.load_image(running_image_srcs)
     attacking_images = WorldObject.load_image(attacking_image_srcs)
 
     # TODO: This should be somewhere else... probably in a method
