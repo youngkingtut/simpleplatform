@@ -296,7 +296,7 @@ class GrassBlock(WorldObject):
         WorldObject.__init__(self, *args, **kwargs)
         self.image = random.choice(self.sprites)
         self.rect = self.image.get_rect()
-        self.rect.top_left = self.pos
+        self.rect.topleft = self.pos
 
     def get_current_sprite(self):
         return self
@@ -320,7 +320,7 @@ class SkyBlock(WorldObject):
         WorldObject.__init__(self, *args, **kwargs)
         self.image = random.choice(self.sprites)
         self.rect = self.image.get_rect()
-        self.rect.top_left = self.pos
+        self.rect.topleft = self.pos
 
     def get_current_sprite(self):
         return self
