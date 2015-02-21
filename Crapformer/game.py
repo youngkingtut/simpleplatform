@@ -40,7 +40,7 @@ class PlayGame(State):
         self.surface = pygame.Surface(GameConfig.SCREEN_SIZE)
         self.surface.fill(GameConfig.CLEAN_SCREEN)
         self.clock = pygame.time.Clock()
-        self.world = world.LevelOne(self.state_vars, self.surface)
+        self.world = world.LevelOne(self.surface, self.state_vars)
 
     def run(self):
         """
@@ -52,7 +52,7 @@ class PlayGame(State):
         """
         self.setup()
         while not self.world.is_complete:
-            state = self.world.recieve_events(pygame.event.get())
+            self.world.receive_events(pygame.event.get())
 
             self.clock.tick(GameConfig.FRAMES_PER_SECOND)
 
@@ -83,13 +83,14 @@ class StateHandler(object):
         self.screen = pygame.display.set_mode(GameConfig.SCREEN_SIZE)
         self.current_state = PlayGame(self.screen, self.state_vars)
 
-    def end_game(self):
-        pygame.quit()
-
     def run_game(self):
         while self.current_state:
             current_state_object = self.current_state.run()
-            self.current_state = current_state_object if not hasattr(current_state_object, "__call__") else current_state_object(self.screen, self.state_vars)
+            if not hasattr(current_state_object, "__call__"):
+                self.current_state = current_state_object
+            else:
+                self.current_state = current_state_object(self.screen, self.state_vars)
 
-    def teardown(self):
-        pass
+    @staticmethod
+    def teardown():
+        pygame.quit()

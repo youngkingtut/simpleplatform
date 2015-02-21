@@ -6,4 +6,4 @@ class GameConfig(object):
     SCREEN_SIZE = 800, 400
     CAPTION = 'Crapformer'
     CLEAN_SCREEN = (255, 255, 255)
-    FRAMES_PER_SECOND = 10
+    FRAMES_PER_SECOND = 30
