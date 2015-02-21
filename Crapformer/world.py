@@ -12,16 +12,16 @@ world_logger = logging.getLogger(__name__)
 
 
 class World(object):
-    '''
+    """
     This is the the most basic level class.
     The player can interact with things inside a World.
     World objects are what generate the image seen at any time
     based on the objects inside of that World.  This includes Menus,
     Levels, etc.
-    '''
+    """
     def __init__(self, state, surface):
-        '''
-        '''
+        """
+        """
         self.idgen = itertools.count()
         self.world_objects = {}
         self.surface = surface
@@ -32,12 +32,12 @@ class World(object):
         return self.idgen.next()
 
     def recieve_events(self, events):
-        '''
+        """
         Takes in events from any source (really should only be
         the function or class that instantiated this World) and
         reacts.  The passed in events are expected to be instances of
         pygame.event.Event
-        '''
+        """
         for event in events:
             if event.type == pygame.QUIT:
                 self.is_complete = True
@@ -60,16 +60,16 @@ class World(object):
 
     # TODO: [DETECTION] Need to add a mechanism for an element of
     #       the world to query for other elements of the world.
-    #       Maybe somethng like find_nearby_instance_of_class()?
+    #       Maybe something like find_nearby_instance_of_class()?
     #
     #       Would it be beneficial to track objects of interest
-    #       and objects of not-interest seperately, so a method
-    #       like find_nearby_indtance... would have a smaller set
+    #       and objects of not-interest separately, so a method
+    #       like find_nearby_instance... would have a smaller set
     #       to scan?
 
 
 # TODO: Should we have different types of Worlds -- Menus?  Gameworlds?
-#       Or should those be handled seperately and have World be exclusively
+#       Or should those be handled separately and have World be exclusively
 #       for things like LevelOne?
 
 # TODO: We should probably make each Level their own file.  Should also
@@ -101,9 +101,9 @@ class LevelOne(World):
 class WorldObject(pygame.sprite.Sprite):
     # TODO: Need to determine the real purpose of this
     #       class. What needs to be contained in here?
-    '''
+    """
     A WorldObject is any object within a level.
-    '''
+    """
     def __init__(self, id, pos, *args, **kwargs):
         pygame.sprite.Sprite.__init__(self, *args, **kwargs)
         self.id = id
@@ -111,7 +111,6 @@ class WorldObject(pygame.sprite.Sprite):
         self.pos = pos
         self.dpdt = [0, 0]
         self.d2pdt2 = [0, 0]
-
 
     @staticmethod
     def load_image(srcs):
@@ -132,14 +131,14 @@ class WorldObject(pygame.sprite.Sprite):
 #
 
 class DynamicObject(WorldObject):
-    '''
+    """
     Contains methods for generating animations
     and motion.
-    '''
+    """
     def __init__(self, *args, **kwargs):
         WorldObject.__init__(self, *args, **kwargs)
-        self.dpdt = [0,0]
-        self.d2pdt2 = [0,0]
+        self.dpdt = [0, 0]
+        self.d2pdt2 = [0, 0]
         pass
 
     def update_spatial_vars(self):
@@ -153,12 +152,12 @@ class DynamicObject(WorldObject):
 
 # === TYPES OF INTERACTABLE OBJECTS ===
 class Player(DynamicObject):
-    standing_image_srcs = ['../Sprites/crusty_running/crusty1.png']
-    running_image_srcs = ['../Sprites/crusty_running/crusty1.png',
+    standing_images_sources = ['../Sprites/crusty_running/crusty1.png']
+    running_images_sources = ['../Sprites/crusty_running/crusty1.png',
                           '../Sprites/crusty_running/crusty2.png']
 
-    standing_images = WorldObject.load_image(standing_image_srcs)
-    running_images = WorldObject.load_image(running_image_srcs)
+    standing_images = WorldObject.load_image(standing_images_sources)
+    running_images = WorldObject.load_image(running_images_sources)
 
     # TODO: This should be somewhere else... probably in a method
     running_animation = itertools.cycle(running_images)
@@ -167,11 +166,11 @@ class Player(DynamicObject):
         DynamicObject.__init__(self, *args, **kwargs)
         self.is_running = False
         self.facing_left = False
-        #TODO: implement a more generic set of methods for
-        #      modifiying state 
+        # TODO: implement a more generic set of methods for
+        #      modifiying state
         self.falling = True
 
-    #TODO: Remove this.  Only here to test out animation of Player
+    # TODO: Remove this.  Only here to test out animation of Player
     def handle_input(self):
         pressed_keys = pygame.key.get_pressed()
         if self.falling is False:
@@ -189,7 +188,7 @@ class Player(DynamicObject):
                 self.is_running = False
                 self.dpdt[0] /= 1.4
 
-        #TODO: Why am I even still playing with this... GET RID OF THIS GROSSNESS!
+        # TODO: Why am I even still playing with this... GET RID OF THIS GROSSNESS!
         if self.dpdt[0] < -30 or self.dpdt[0] > 30:
             self.dpdt[0] /= 2
 
@@ -201,7 +200,7 @@ class Player(DynamicObject):
         elif True == pressed_keys[pygame.K_DOWN]:
             pass
 
-        #TODO: Get rid of this hard coded stop.
+        # TODO: Get rid of this hard coded stop.
         if self.pos[1] + self.dpdt[1] > 280:
             self.pos[1] = 280
             self.dpdt[1] = 0
@@ -226,14 +225,14 @@ class Player(DynamicObject):
 
 
 class Marty(DynamicObject):
-    standing_image_srcs = ['../Sprites/Marty/running1.png']
-    running_image_srcs = ['../Sprites/Marty/running1.png',
+    standing_images_sources = ['../Sprites/Marty/running1.png']
+    running_images_sources = ['../Sprites/Marty/running1.png',
                           '../Sprites/Marty/running2.png']
     attacking_image_srcs = ['../Sprites/Marty/attack1.png',
                             '../Sprites/Marty/attack2.png']
 
-    standing_images = WorldObject.load_image(standing_image_srcs)
-    running_images = WorldObject.load_image(running_image_srcs)
+    standing_images = WorldObject.load_image(standing_images_sources)
+    running_images = WorldObject.load_image(running_images_sources)
     attacking_images = WorldObject.load_image(attacking_image_srcs)
 
     # TODO: This should be somewhere else... probably in a method
@@ -280,9 +279,9 @@ class Marty(DynamicObject):
 
 # === NONINTERACTABLE OBJECTS ===
 class GrassBlock(WorldObject):
-    '''
+    """
     Grass blocks that act as platforms.
-    '''
+    """
     # Source for the images associated with this class
     image_srcs = ['../Sprites/grass/grass1.png',
                   '../Sprites/grass/grass2.png',
@@ -290,10 +289,10 @@ class GrassBlock(WorldObject):
     sprites = WorldObject.load_image(image_srcs)
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Selects a random sprite to be loaded for each instance.
         Initializes position and rect object for this instance.
-        '''
+        """
         WorldObject.__init__(self, *args, **kwargs)
         self.image = random.choice(self.sprites)
         self.rect = self.image.get_rect()
@@ -304,19 +303,19 @@ class GrassBlock(WorldObject):
 
 
 class SkyBlock(WorldObject):
-    '''
+    """
     Sky blocks that act as background coloring.  These are
     used to paint the scenery of the World. :3
-    '''
+    """
     # Source for the images associated with this class
     image_srcs = ['../Sprites/sky/sky1.png']
     sprites = WorldObject.load_image(image_srcs)
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Selects a random sprite to be loaded for this instance.
         Initializes positiona and rect object for this instance.
-        '''
+        """
         # TODO: Should this stuff be handled in WorldObject?
         WorldObject.__init__(self, *args, **kwargs)
         self.image = random.choice(self.sprites)
